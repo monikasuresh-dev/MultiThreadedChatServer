@@ -1,0 +1,49 @@
+flowchart LR
+    subgraph CLIENTS["Chat clients (separate console windows)"]
+        direction TB
+        CA["Chat Client A<br/>main thread: keyboard to server<br/>server-listener thread: server to screen"]
+        CB["Chat Client B<br/>main thread + server-listener thread"]
+        CC["Chat Client C<br/>main thread + server-listener thread"]
+    end
+
+    subgraph SERVER["Chat Server (one JVM process)"]
+        direction TB
+        ACCEPT["Main thread<br/>accept loop in ChatServer.start()<br/>serverSocket.accept()"]
+        subgraph HANDLERS["One ClientHandler thread per client"]
+            direction TB
+            HA["client-handler-1<br/>serves Client A"]
+            HB["client-handler-2<br/>serves Client B"]
+            HC["client-handler-3<br/>serves Client C"]
+        end
+        SHARED[("Shared list of connected clients<br/>List of ClientHandler<br/>guarded by synchronized(clients)")]
+        BROADCAST["broadcast(message, sender)<br/>1. copy list under lock<br/>2. send to every client except sender"]
+        CLEANUP["Disconnect cleanup (finally block)<br/>unregister, close socket,<br/>broadcast 'left the chat'"]
+    end
+
+    CA -- "1 TCP connect (port 5000)" --> ACCEPT
+    CB -- "1 TCP connect" --> ACCEPT
+    CC -- "1 TCP connect" --> ACCEPT
+    ACCEPT -. "2 new Thread(handler).start()" .-> HA
+    ACCEPT -. "2 new Thread(handler).start()" .-> HB
+    ACCEPT -. "2 new Thread(handler).start()" .-> HC
+
+    CA <-- "3 text lines over the socket" --> HA
+    CB <-- "3 text lines over the socket" --> HB
+    CC <-- "3 text lines over the socket" --> HC
+
+    HA -- "register / unregister" --> SHARED
+    HB -- "register / unregister" --> SHARED
+    HC -- "register / unregister" --> SHARED
+
+    HA -- "chat message" --> BROADCAST
+    HB -- "chat message" --> BROADCAST
+    HC -- "chat message" --> BROADCAST
+    BROADCAST -- "read snapshot" --> SHARED
+    BROADCAST -. "send() to the other handlers" .-> HA
+    BROADCAST -. "send() to the other handlers" .-> HB
+    BROADCAST -. "send() to the other handlers" .-> HC
+
+    HA -- "on quit or connection loss" --> CLEANUP
+    HB -- "on quit or connection loss" --> CLEANUP
+    HC -- "on quit or connection loss" --> CLEANUP
+    CLEANUP -- "remove entry" --> SHARED

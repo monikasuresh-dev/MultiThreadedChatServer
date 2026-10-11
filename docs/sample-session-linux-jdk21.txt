@@ -1,0 +1,67 @@
+ILLUSTRATIVE OUTPUT FROM A REAL RUN
+Captured by the assistant on Linux with OpenJDK 21 (NOT on your Windows laptop), server on port 5055, three ChatClient processes fed by a script.
+Your own run on Windows will have different timestamps and ports. Take your own screenshots for the report.
+
+=================== server console ===================
+[06:53:14] [main] Chat server started on 127.0.0.1:5055. Waiting for clients... (Ctrl+C to stop)
+[06:53:15] [client-handler-1] Alice joined from /127.0.0.1:48418. Active clients: 1
+[06:53:15] [client-handler-1] Broadcast from Alice to 0 other client(s): *** Alice joined the chat ***
+[06:53:15] [client-handler-2] Bob joined from /127.0.0.1:48426. Active clients: 2
+[06:53:15] [client-handler-2] Broadcast from Bob to 1 other client(s): *** Bob joined the chat ***
+[06:53:16] [client-handler-3] Carol joined from /127.0.0.1:48432. Active clients: 3
+[06:53:17] [client-handler-3] Broadcast from Carol to 2 other client(s): *** Carol joined the chat ***
+[06:53:19] [client-handler-3] Broadcast from Carol to 2 other client(s): [Carol] Carol checking in
+[06:53:20] [client-handler-1] Broadcast from Alice to 2 other client(s): [Alice] Hello everyone, this is Alice
+[06:53:21] [client-handler-2] Broadcast from Bob to 2 other client(s): [Bob] Hi Alice, Bob here
+[06:53:23] [client-handler-3] Carol disconnected. Active clients: 2
+[06:53:23] [client-handler-3] Broadcast from Carol to 2 other client(s): *** Carol left the chat ***
+[06:53:28] [client-handler-1] Broadcast from Alice to 1 other client(s): [Alice] Alice: Bob and I are still connected
+[06:53:29] [client-handler-2] Broadcast from Bob to 1 other client(s): [Bob] Bob: confirming I still receive messages
+[06:53:31] [client-handler-2] Bob disconnected. Active clients: 1
+[06:53:31] [client-handler-2] Broadcast from Bob to 1 other client(s): *** Bob left the chat ***
+[06:53:32] [client-handler-1] Alice disconnected. Active clients: 0
+[06:53:32] [client-handler-1] Broadcast from Alice to 0 other client(s): *** Alice left the chat ***
+
+=================== alice console ===================
+Connecting to localhost:5055 ...
+Welcome, Alice! Currently online: Alice
+Commands: /users (list who is online), /quit (leave the chat)
+*** Bob joined the chat ***
+*** Carol joined the chat ***
+[Carol] Carol checking in
+[Bob] Hi Alice, Bob here
+*** Carol left the chat ***
+[Bob] Bob: confirming I still receive messages
+*** Bob left the chat ***
+You left the chat.
+Goodbye!
+
+=================== bob console ===================
+Connecting to localhost:5055 ...
+Welcome, Bob! Currently online: Alice, Bob
+Commands: /users (list who is online), /quit (leave the chat)
+*** Carol joined the chat ***
+[Carol] Carol checking in
+[Alice] Hello everyone, this is Alice
+*** Carol left the chat ***
+Online users (2): Alice, Bob
+[Alice] Alice: Bob and I are still connected
+You left the chat.
+Goodbye!
+
+=================== carol console ===================
+Connecting to localhost:5055 ...
+Welcome, Carol! Currently online: Alice, Bob, Carol
+Commands: /users (list who is online), /quit (leave the chat)
+[Alice] Hello everyone, this is Alice
+[Bob] Hi Alice, Bob here
+You left the chat.
+Goodbye!
+
+=================== client started while no server is running (port 5999) ===================
+Connecting to localhost:5999 ...
+Could not connect to localhost:5999. Is the server running, and is the port number correct?
+
+=================== second server started on a port that is already in use (port 5056) ===================
+Could not start the server on port 5056: Address already in use
+The port may already be in use. Try another one, e.g.: java -cp out ChatServer 6000

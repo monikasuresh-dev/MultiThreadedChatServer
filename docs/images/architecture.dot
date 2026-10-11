@@ -1,0 +1,69 @@
+digraph ChatServerArchitecture {
+    rankdir=LR;
+    compound=true;
+    newrank=true;
+    nodesep=0.45;
+    ranksep=1.3;
+    fontname="DejaVu Sans";
+    labelloc="t";
+    label="Multi-threaded Chat Server - thread-per-client architecture";
+    fontsize=20;
+    node [fontname="DejaVu Sans", fontsize=11, shape=box, style="rounded,filled", fillcolor="#FFFFFF", color="#37474F"];
+    edge [fontname="DejaVu Sans", fontsize=10, color="#37474F"];
+
+    subgraph cluster_clients {
+        label="Chat clients (separate console windows)";
+        style="rounded,filled"; fillcolor="#E3F2FD"; color="#1565C0"; fontsize=13;
+        clientA [label="Chat Client A\nmain thread: keyboard -> server\nserver-listener thread: server -> screen", fillcolor="#BBDEFB"];
+        clientB [label="Chat Client B\nmain thread + server-listener thread", fillcolor="#BBDEFB"];
+        clientC [label="Chat Client C\nmain thread + server-listener thread", fillcolor="#BBDEFB"];
+    }
+
+    subgraph cluster_server {
+        label="Chat Server (one JVM process)";
+        style="rounded,filled"; fillcolor="#F5F5F5"; color="#455A64"; fontsize=13;
+
+        accept [label="MAIN THREAD\nAccept loop: ChatServer.start()\nserverSocket.accept()", fillcolor="#C8E6C9", color="#2E7D32"];
+
+        subgraph cluster_handlers {
+            label="One ClientHandler thread per client"; labeljust="l";
+            style="rounded,filled"; fillcolor="#FFF8E1"; color="#F9A825"; fontsize=12;
+            hA [label="client-handler-1\n(serves Client A)", fillcolor="#FFE082"];
+            hB [label="client-handler-2\n(serves Client B)", fillcolor="#FFE082"];
+            hC [label="client-handler-3\n(serves Client C)", fillcolor="#FFE082"];
+        }
+
+        shared [shape=cylinder, style="filled", fillcolor="#FFCDD2", color="#C62828",
+                label="SHARED: list of connected clients\nList<ClientHandler> clients\nguarded by synchronized (clients)"];
+        broadcast [label="broadcast(message, sender)\n1. copy the list while holding the lock\n2. send() to every client except the sender", fillcolor="#E1BEE7", color="#6A1B9A"];
+        cleanup [label="Disconnect cleanup (finally block)\nunregister -> close socket ->\nbroadcast \"left the chat\"", fillcolor="#FFE0B2", color="#E65100"];
+    }
+
+    { rank=same; clientA -> clientB -> clientC [style=invis]; }
+    { rank=same; hA -> hB -> hC [style=invis]; }
+
+    // 1. connection requests
+    clientA -> accept [label="1  TCP connect\n(port 5000)", color="#1565C0", penwidth=1.6];
+    clientB -> accept [label="1  TCP connect", color="#1565C0", penwidth=1.6];
+    clientC -> accept [label="1  TCP connect", color="#1565C0", penwidth=1.6];
+
+    // 2. thread creation
+    accept -> hA [label="2  new Thread(handler)\n.start()", style=dashed, color="#2E7D32", penwidth=1.6, lhead=cluster_handlers];
+
+    // 3. messages over the sockets
+    clientA -> hA [dir=both, label="3  text lines\nover TCP socket", color="#1565C0", penwidth=1.6];
+    clientB -> hB [dir=both, label="3  text lines", color="#1565C0", penwidth=1.6];
+    clientC -> hC [dir=both, label="3  text lines", color="#1565C0", penwidth=1.6];
+
+    // 4. registering / unregistering
+    hA -> shared [label="4  register /\nunregister", color="#C62828", penwidth=1.6, ltail=cluster_handlers];
+
+    // 5. broadcasting
+    hC -> broadcast [label="5  chat message", color="#6A1B9A", ltail=cluster_handlers, penwidth=1.6];
+    broadcast -> shared [label="read snapshot", color="#6A1B9A", style=dashed];
+    broadcast -> hC [label="6  send() to the other\nclients' handlers", color="#6A1B9A", penwidth=1.6, constraint=false, headport=s, tailport=n];
+
+    // 7. cleanup
+    hB -> cleanup [label="7  quit or\nconnection lost", color="#E65100", ltail=cluster_handlers, penwidth=1.6];
+    cleanup -> shared [label="remove entry", color="#E65100"];
+}

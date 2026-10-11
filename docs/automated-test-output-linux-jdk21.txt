@@ -1,0 +1,313 @@
+== Test 1: server start and single client ==
+  PASS  Server is listening on a free port (43635)
+[06:53:05] [test-accept-loop] Chat server started on 127.0.0.1:43635. Waiting for clients... (Ctrl+C to stop)
+[06:53:05] [client-handler-1] Alice joined from /127.0.0.1:52770. Active clients: 1
+  PASS  Alice receives a welcome message
+  PASS  Server shows 1 active client
+== Test 2: multiple simultaneous clients and join notifications ==
+[06:53:05] [client-handler-2] Bob joined from /127.0.0.1:52778. Active clients: 2
+  PASS  Bob's welcome lists Alice as already online
+  PASS  Alice is notified that Bob joined
+[06:53:06] [client-handler-3] Carol joined from /127.0.0.1:52792. Active clients: 3
+[06:53:06] [client-handler-3] Broadcast from Carol to 2 other client(s): *** Carol joined the chat ***
+[06:53:06] [client-handler-1] Broadcast from Alice to 0 other client(s): *** Alice joined the chat ***
+  PASS  Server shows 3 active clients
+== Test 3: broadcasting ==
+[06:53:06] [client-handler-1] Broadcast from Alice to 2 other client(s): [Alice] hello from alice
+  PASS  Bob receives Alice's message
+  PASS  Carol receives Alice's message
+[06:53:06] [client-handler-2] Broadcast from Bob to 1 other client(s): *** Bob joined the chat ***
+[06:53:06] [client-handler-2] Broadcast from Bob to 2 other client(s): [Bob] hi from bob
+  PASS  Alice receives Bob's message
+  PASS  A sender does not receive an echo of its own message
+== Test 4: /users command ==
+  PASS  /users lists all three clients
+== Test 5: graceful disconnect (/quit) ==
+[06:53:06] [client-handler-3] Carol disconnected. Active clients: 2
+[06:53:06] [client-handler-3] Broadcast from Carol to 2 other client(s): *** Carol left the chat ***
+  PASS  Alice is told Carol left
+  PASS  Bob is told Carol left
+  PASS  Server closed Carol's connection
+  PASS  Carol was removed from the active client list
+== Test 6: remaining clients keep communicating ==
+[06:53:06] [client-handler-1] Broadcast from Alice to 1 other client(s): [Alice] still here
+  PASS  Bob still receives Alice's messages
+== Test 7: abrupt disconnect (simulated crash / connection reset) ==
+[06:53:06] [client-handler-2] Bob connection lost unexpectedly: Connection reset
+[06:53:06] [client-handler-2] Bob disconnected. Active clients: 1
+[06:53:06] [client-handler-2] Broadcast from Bob to 1 other client(s): *** Bob left the chat ***
+  PASS  Alice is told Bob left
+  PASS  Bob was removed from the active client list
+== Test 8: rejected and half-open connections do not break the server ==
+  PASS  Duplicate name is rejected with an ERROR
+  PASS  Server closes the rejected connection
+  PASS  Invalid name is rejected with an ERROR
+[06:53:06] [client-handler-6] A client connected and disconnected without sending a name.
+  PASS  Rejected/silent connections were not added to the client list
+[06:53:06] [client-handler-7] Dave joined from /127.0.0.1:52826. Active clients: 2
+[06:53:06] [client-handler-7] Broadcast from Dave to 1 other client(s): *** Dave joined the chat ***
+  PASS  Server still accepts new clients afterwards
+[06:53:06] [client-handler-7] Broadcast from Dave to 1 other client(s): [Dave] dave here
+  PASS  New client can chat with the old one
+[06:53:06] [client-handler-1] Alice disconnected. Active clients: 1
+[06:53:06] [client-handler-1] Broadcast from Alice to 1 other client(s): *** Alice left the chat ***
+[06:53:06] [client-handler-7] Dave disconnected. Active clients: 0
+[06:53:06] [client-handler-7] Broadcast from Dave to 0 other client(s): *** Dave left the chat ***
+  PASS  All clients removed, no stale entries
+== Test 9: stress test - 10 clients sending 20 messages each at the same time ==
+[06:53:06] [client-handler-8] U0 joined from /127.0.0.1:52836. Active clients: 1
+[06:53:06] [client-handler-8] Broadcast from U0 to 0 other client(s): *** U0 joined the chat ***
+[06:53:06] [client-handler-9] U1 joined from /127.0.0.1:52852. Active clients: 2
+[06:53:06] [client-handler-9] Broadcast from U1 to 1 other client(s): *** U1 joined the chat ***
+[06:53:06] [client-handler-10] U2 joined from /127.0.0.1:52854. Active clients: 3
+[06:53:06] [client-handler-10] Broadcast from U2 to 2 other client(s): *** U2 joined the chat ***
+[06:53:06] [client-handler-11] U3 joined from /127.0.0.1:52866. Active clients: 4
+[06:53:06] [client-handler-11] Broadcast from U3 to 3 other client(s): *** U3 joined the chat ***
+[06:53:06] [client-handler-12] U4 joined from /127.0.0.1:52868. Active clients: 5
+[06:53:06] [client-handler-12] Broadcast from U4 to 4 other client(s): *** U4 joined the chat ***
+[06:53:06] [client-handler-13] U5 joined from /127.0.0.1:52874. Active clients: 6
+[06:53:06] [client-handler-13] Broadcast from U5 to 5 other client(s): *** U5 joined the chat ***
+[06:53:06] [client-handler-14] U6 joined from /127.0.0.1:52880. Active clients: 7
+[06:53:06] [client-handler-14] Broadcast from U6 to 6 other client(s): *** U6 joined the chat ***
+[06:53:06] [client-handler-15] U7 joined from /127.0.0.1:52884. Active clients: 8
+[06:53:06] [client-handler-15] Broadcast from U7 to 7 other client(s): *** U7 joined the chat ***
+[06:53:06] [client-handler-16] U8 joined from /127.0.0.1:52896. Active clients: 9
+[06:53:06] [client-handler-16] Broadcast from U8 to 8 other client(s): *** U8 joined the chat ***
+[06:53:06] [client-handler-17] U9 joined from /127.0.0.1:52906. Active clients: 10
+  PASS  All 10 stress clients are connected
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): *** U9 joined the chat ***
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-0
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-0
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-1
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-1
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-2
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-3
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-4
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-5
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-6
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-7
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-8
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-9
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-10
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-0
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-0
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-0
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-0
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-2
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-11
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-1
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-2
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-3
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-4
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-1
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-2
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-3
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-4
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-5
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-6
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-7
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-8
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-12
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-13
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-14
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-15
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-16
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-17
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-18
+[06:53:06] [client-handler-9] Broadcast from U1 to 9 other client(s): [U1] msg-19
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-9
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-10
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-11
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-12
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-13
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-14
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-15
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-16
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-1
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-2
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-3
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-4
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-5
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-6
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-7
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-8
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-17
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-0
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-1
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-2
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-3
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-4
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-5
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-6
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-7
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-8
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-9
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-10
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-11
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-12
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-9
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-0
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-0
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-18
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-0
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-3
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-5
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-1
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-1
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-2
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-3
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-4
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-5
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-6
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): [U0] msg-19
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-1
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-2
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-3
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-4
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-5
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-6
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-2
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-3
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-4
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-5
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-10
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-6
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-6
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-7
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-4
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-1
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-13
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-8
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-7
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-9
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-10
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-11
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-14
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-15
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-16
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-17
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-18
+[06:53:06] [client-handler-16] Broadcast from U8 to 9 other client(s): [U8] msg-19
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-5
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-6
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-7
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-8
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-9
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-10
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-11
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-2
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-7
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-8
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-9
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-10
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-11
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-12
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-13
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-14
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-15
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-12
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-16
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-17
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-18
+[06:53:06] [client-handler-12] Broadcast from U4 to 9 other client(s): [U4] msg-19
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-8
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-9
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-10
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-11
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-12
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-13
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-14
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-15
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-16
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-17
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-18
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-7
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-13
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-3
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-4
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-5
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-6
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-7
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-8
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-9
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-10
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-11
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-12
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-13
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-14
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-15
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-16
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-17
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-18
+[06:53:06] [client-handler-13] Broadcast from U5 to 9 other client(s): [U5] msg-19
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-11
+[06:53:06] [client-handler-14] Broadcast from U6 to 9 other client(s): [U6] msg-19
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-12
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-13
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-14
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-15
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-16
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-17
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-18
+[06:53:06] [client-handler-11] Broadcast from U3 to 9 other client(s): [U3] msg-19
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-12
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-13
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-14
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-15
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-16
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-17
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-18
+[06:53:06] [client-handler-17] Broadcast from U9 to 9 other client(s): [U9] msg-19
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-14
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-15
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-16
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-8
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-9
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-10
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-11
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-12
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-13
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-14
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-15
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-16
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-17
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-18
+[06:53:06] [client-handler-15] Broadcast from U7 to 9 other client(s): [U7] msg-19
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-17
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-18
+[06:53:06] [client-handler-10] Broadcast from U2 to 9 other client(s): [U2] msg-19
+  PASS  Every client received all 180 messages from the others (none lost)
+  PASS  Server still has 10 clients after the burst
+[06:53:06] [client-handler-8] U0 disconnected. Active clients: 9
+[06:53:06] [client-handler-8] Broadcast from U0 to 9 other client(s): *** U0 left the chat ***
+[06:53:06] [client-handler-9] U1 disconnected. Active clients: 8
+[06:53:06] [client-handler-14] U6 disconnected. Active clients: 7
+[06:53:06] [client-handler-11] U3 disconnected. Active clients: 6
+[06:53:06] [client-handler-15] U7 disconnected. Active clients: 5
+[06:53:06] [client-handler-16] U8 disconnected. Active clients: 4
+[06:53:06] [client-handler-12] U4 disconnected. Active clients: 3
+[06:53:06] [client-handler-13] U5 disconnected. Active clients: 2
+[06:53:06] [client-handler-15] Broadcast from U7 to 5 other client(s): *** U7 left the chat ***
+[06:53:06] [client-handler-16] Broadcast from U8 to 4 other client(s): *** U8 left the chat ***
+[06:53:06] [client-handler-12] Broadcast from U4 to 3 other client(s): *** U4 left the chat ***
+[06:53:06] [client-handler-14] Broadcast from U6 to 7 other client(s): *** U6 left the chat ***
+[06:53:06] [client-handler-10] U2 disconnected. Active clients: 1
+[06:53:06] [client-handler-10] Broadcast from U2 to 1 other client(s): *** U2 left the chat ***
+[06:53:06] [client-handler-13] Broadcast from U5 to 2 other client(s): *** U5 left the chat ***
+[06:53:06] [client-handler-17] U9 disconnected. Active clients: 0
+[06:53:06] [client-handler-17] Broadcast from U9 to 0 other client(s): *** U9 left the chat ***
+[06:53:06] [client-handler-9] Broadcast from U1 to 8 other client(s): *** U1 left the chat ***
+[06:53:06] [client-handler-11] Broadcast from U3 to 6 other client(s): *** U3 left the chat ***
+  PASS  All stress clients removed afterwards
+== Test 10: server shutdown ==
+[06:53:06] [client-handler-18] Last joined from /127.0.0.1:52912. Active clients: 1
+[06:53:06] [main] Server shutting down...
+[06:53:06] [client-handler-18] Broadcast from Last to 0 other client(s): *** Last joined the chat ***
+  PASS  Connected client is told about the shutdown
+  PASS  Client connection is closed by the server
+[06:53:06] [test-accept-loop] Accept loop stopped.
+[06:53:06] [client-handler-18] Last disconnected. Active clients: 0
+  PASS  Accept loop has ended
+
+[06:53:06] [client-handler-18] Broadcast from Last to 0 other client(s): *** Last left the chat ***
+RESULT: 32 passed, 0 failed
